@@ -7,6 +7,27 @@ mod bindings;
 
 // use bindings::*;
 
+struct ClipboardGuard;
+
+impl ClipboardGuard {
+    pub fn new(handle: Option<*const core::ffi::c_void>) -> Result<Self, u32> {
+        let call_status = match handle {
+            None => unsafe { bindings::OpenClipboard(std::ptr::null()) },
+            Some(inner_handle) => unsafe { bindings::OpenClipboard(inner_handle) }
+        };
+
+        match call_status {
+            false => Err(unsafe{ bindings::GetLastError() }),
+            true => Ok(ClipboardGuard{})
+        }
+    }
+}
+
+impl Drop for ClipboardGuard {
+    fn drop(&mut self) {
+        unsafe { bindings::CloseClipboard() };
+    }
+}
 
 /// Print the contents of the clipboard to filename
 #[no_mangle]
