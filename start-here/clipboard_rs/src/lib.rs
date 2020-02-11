@@ -1,8 +1,8 @@
 mod bindings;
 
 // use std::ffi::OsString;
-// use std::fs::File;
-// use std::io::prelude::*;
+use std::fs::File;
+use std::io::prelude::*;
 // use std::os::windows::prelude::*;
 
 // use bindings::*;
@@ -12,7 +12,7 @@ use winapi::shared::{ntdef, minwindef};
 
 unsafe fn str16_len(str16_ptr: *const u16) -> usize {
     let mut len: usize = 0;
-    while (str16_ptr.add(len).read() != 0) {
+    while str16_ptr.add(len).read() != 0 {
         len += 1;
     }
     len
@@ -67,5 +67,10 @@ pub extern "C" fn print_clipboard_file(filename: *const u16, len: usize) {
     let file_name = String::from_utf16_lossy(&name_slice);
 
     let my_clipboard = ClipboardGuard::new(None).unwrap();
-    println!("{}", my_clipboard.get_text().unwrap());
+    let clipboard_text = my_clipboard.get_text().unwrap();
+    println!("Writing clipboard to file '{}'...", file_name);
+    println!("{}", clipboard_text);
+
+    let mut file = File::create(file_name).unwrap();
+    file.write_all(clipboard_text.as_bytes());
 }
