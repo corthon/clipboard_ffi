@@ -88,7 +88,6 @@ PrintClipboardText()
     else
     {
         ReportErr("No text on clipboard", GetLastError());
-        return;
 
     }
     CloseClipboard();
